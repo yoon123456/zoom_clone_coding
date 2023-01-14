@@ -15,16 +15,20 @@ const handleListen = () => console.log(`Listening on http://localhost:3000`);
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server });
 
+const sockets = [];
 // 브라우저로의 연결 socket
 wss.on("connection", (socket) => {
+  sockets.push(socket);
+  console.log("conneted to browser!! ✅");
   socket.send("hello");
   socket.on("close", () => {
     console.log("disconneted from browser!! ❌");
   });
   socket.on("message", (msg) => {
-    console.log(msg.toString("utf8"));
+    sockets.forEach((aSocket) => {
+      aSocket.send(msg.toString("utf8"));
+    });
   });
-  console.log("conneted to browser!! ✅");
 });
 
 server.listen(3000, handleListen);
