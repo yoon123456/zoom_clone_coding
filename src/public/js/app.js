@@ -1,15 +1,23 @@
 const msgList = document.querySelector("ul");
-const msgForm = document.querySelector("form");
+const nickForm = document.querySelector("#nickname");
+const msgForm = document.querySelector("#msg");
 
 // 서버로의 연결 socket
 const socket = new WebSocket(`ws://${window.location.host}`);
+
+const makeMsg = (type, payload) => {
+  const msg = { type, payload };
+  return JSON.stringify(msg);
+};
 
 socket.addEventListener("open", () => {
   console.log("conneted to server!! ✅");
 });
 
 socket.addEventListener("message", (msg) => {
-  console.log("new message", msg.data, "from server");
+  const li = document.createElement("li");
+  li.innerText = msg.data;
+  msgList.appendChild(li);
 });
 
 socket.addEventListener("close", () => {
@@ -19,9 +27,19 @@ socket.addEventListener("close", () => {
 const handelSubmit = (e) => {
   e.preventDefault();
   const input = msgForm.querySelector("input");
-  socket.send(input.value);
-  console.log(input.value);
+  socket.send(makeMsg("new_message", input.value));
+  const li = document.createElement("li");
+  li.innerText = `You: ${input.value}`;
+  msgList.appendChild(li);
+
   input.value = "";
 };
 
+const handelNickSubmit = (e) => {
+  e.preventDefault();
+  const input = nickForm.querySelector("input");
+  socket.send(makeMsg("nickname", input.value));
+  input.value = "";
+};
 msgForm.addEventListener("submit", handelSubmit);
+nickForm.addEventListener("submit", handelNickSubmit);

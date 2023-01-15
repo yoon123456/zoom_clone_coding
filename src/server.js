@@ -1,6 +1,7 @@
 import http from "http";
-import WebSocket, { WebSocketServer } from "ws";
+// import WebSocket, { WebSocketServer } from "ws";
 import express from "express";
+import SocketIO from "socket.io";
 
 const app = express();
 
@@ -12,23 +13,41 @@ app.get("/*", (req, res) => res.redirect("/"));
 
 const handleListen = () => console.log(`Listening on http://localhost:3000`);
 
-const server = http.createServer(app);
-const wss = new WebSocketServer({ server });
+const httpServer = http.createServer(app);
+const wsServer = SocketIO(httpServer);
 
-const sockets = [];
-// 브라우저로의 연결 socket
-wss.on("connection", (socket) => {
-  sockets.push(socket);
-  console.log("conneted to browser!! ✅");
-  socket.send("hello");
-  socket.on("close", () => {
-    console.log("disconneted from browser!! ❌");
-  });
-  socket.on("message", (msg) => {
-    sockets.forEach((aSocket) => {
-      aSocket.send(msg.toString("utf8"));
-    });
-  });
-});
+// const wss = new WebSocketServer({ server });
+// const sockets = [];
+// // 브라우저로의 연결 socket
+// wss.on("connection", (socket) => {
+//   sockets.push(socket);
+//   socket["nickname"] = "Anon";
+//   console.log("conneted to browser!! ✅");
+//   socket.on("close", () => {
+//     console.log("disconneted from browser!! ❌");
+//   });
+//   socket.on("message", (msg) => {
+//     const message = JSON.parse(msg);
+//     switch (message.type) {
+//       case "new_message":
+//         sockets.forEach((aSocket) => {
+//           aSocket.send(`${socket.nickname}:${message.payload}`);
+//         });
+//         break;
+//       case "nickname":
+//         socket["nickname"] = message.payload;
+//         break;
+//     }
+//   });
+// });
 
-server.listen(3000, handleListen);
+httpServer.listen(3000, handleListen);
+
+{
+  type: "message";
+  payload: "hello everyone";
+}
+{
+  type: "nickname";
+  payload: "wony";
+}
